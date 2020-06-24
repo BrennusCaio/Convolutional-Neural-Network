@@ -1,4 +1,4 @@
-Epocas               = 50
+Epocas               = 2
 NumeroCapacitor = 4729
 NumeroResistor = 4729
 NumeroTransistor = 5155
@@ -87,9 +87,9 @@ y = np.array(y)
 del train_imgs
 gc.collect()
 
-import seaborn as sns
+#import seaborn as sns
 #Plotagem do número de rótulos existentes no código
-sns.countplot(y)
+#sns.countplot(y)
 #plt.title('Rótulos para capacitor e resistor:')
 
 print("Formato(shape) das imagens de treino:", X.shape)
@@ -172,7 +172,7 @@ train_generator = train_datagen.flow(X_train, y_train, batch_size=batch_size)
 val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
 
 
-'''
+#'''
 #INICIO da Parte de Treinamento
 #100 steps per epoch
 history = model.fit_generator(train_generator,
@@ -192,22 +192,26 @@ val_loss = history.history['val_loss']
 epochs = range(1, len(acc) + 1)
 
 #Train and validation accuracy
-plt.plot(epochs, acc, 'b', label='Training accurarcy')
-plt.plot(epochs, val_acc, 'r', label='Validation accurarcy')
-plt.title('Training and Validation accurarcy')
+plt.plot(epochs, acc, 'b', label='Treino')
+plt.plot(epochs, val_acc, 'r', label='Validação')
+plt.title('Acurácia por época')
+plt.xlabel('épocas')
+plt.ylabel('porcentagem')
 plt.legend()
-plt.figure()
+plt.show()
 
 #Train and validation loss
-plt.plot(epochs, loss, 'b', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='Validation loss')
-plt.title('Training and Validation loss')
+plt.plot(epochs, loss, 'b', label='Treino')
+plt.plot(epochs, val_loss, 'r', label='Validação')
+plt.title('Perda por época')
+plt.xlabel('épocas')
+plt.ylabel('porcentagem')
 plt.legend()
 plt.show()
 
 # FIM da Parte de Treinamento
 
-'''
+#'''
 
 #%%
 from keras.models import load_model
