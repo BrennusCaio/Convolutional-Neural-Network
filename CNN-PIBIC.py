@@ -1,4 +1,6 @@
-Epocas               = 2
+Epocas               = 50
+NumeroIndutor = 3918
+NumeroLed = 4253
 NumeroCapacitor = 4729
 NumeroResistor = 4729
 NumeroTransistor = 5155
@@ -21,12 +23,14 @@ import gc   #Garbage collector for cleaning deleted data from memory
 
 #Diretório de Treino e Teste
 train_dir = 'C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT'
-test_dir = 'C:\\Users\\Brennus\\Downloads\\teste_sem_ruido_cnn'
+test_dir = 'C:\\Users\\Brennus\\Desktop\\leds'
 
 #Coleta imagens de treino com nome de Capacitor, Resistor e Transistor
 treino_capacitor = ['C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT\\{}'.format(i) for i in os.listdir(train_dir) if 'Capacitor' in i]
 treino_resistor = ['C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT\\{}'.format(i) for i in os.listdir(train_dir) if 'Resistor' in i]
 treino_transistor = ['C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT\\{}'.format(i) for i in os.listdir(train_dir) if 'Transistor' in i]
+treino_led = ['C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT\\{}'.format(i) for i in os.listdir(train_dir) if 'led' in i]
+treino_indutor = ['C:\\Users\\Brennus\\Downloads\\treino_cnn_CRT\\{}'.format(i) for i in os.listdir(train_dir) if 'Indutor' in i]
 
 #Coleta as imagens que vão ser utilizadas para teste
 test_imgs = ['C:\\Users\\Brennus\\Downloads\\teste_sem_ruido_cnn\\{}'.format(i) for i in os.listdir(test_dir)] #get test images
@@ -70,6 +74,10 @@ def read_and_process_image(list_of_images):
                 y.append(1)
             elif 'Transistor' in image:
                 y.append(2)
+            elif 'led' in image:
+                y.append(3)
+            elif 'Indutor' in image:
+                y.append(4)
 
         #Caso ele não consiga ler as imagens (cv2.imread) elas vão ser ignoradas.
         except Exception as e:
@@ -116,8 +124,6 @@ nval = len(X_val)
 #We will use a batch size of 32. Note: batch size should be a factor of 2.***4,8,16,32,64...***
 batch_size = 32
 
-
-
 from keras import layers
 from keras import models
 from keras import optimizers
@@ -143,7 +149,7 @@ model.add(layers.Dropout(0.5))  #Dropout for regularization
 model.add(layers.Dense(512, activation='relu'))
 
 #mudar o numero de neuronios da última camada e colocar a função softmax de ativação
-model.add(layers.Dense(3, activation='softmax'))  #Sigmoid function at the end because we have just two classes
+model.add(layers.Dense(5, activation='softmax'))  #Sigmoid function at the end because we have just two classes
 
 #Lets see our model
 model.summary()
@@ -172,7 +178,7 @@ train_generator = train_datagen.flow(X_train, y_train, batch_size=batch_size)
 val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
 
 
-#'''
+'''
 #INICIO da Parte de Treinamento
 #100 steps per epoch
 history = model.fit_generator(train_generator,
@@ -181,7 +187,7 @@ history = model.fit_generator(train_generator,
                               validation_data=val_generator,
                               validation_steps=nval // batch_size)
 #Salvar Modelo treinado
-model.save('modelo_9457.h5')
+model.save('modelo_CRTLI.h5')
 
 #lets plot the train and val curve
 #get the details form the history object
@@ -211,17 +217,18 @@ plt.show()
 
 # FIM da Parte de Treinamento
 
-#'''
+'''
 
 #%%
 from keras.models import load_model
-model=load_model('modelo_9457.h5')
+model=load_model('modelo_CRTLI.h5')
 
-test_imgs = ['C:\\Users\\Brennus\\Downloads\\teste_sem_ruido_cnn\\{}'.format(i) for i in os.listdir(test_dir)]
+#Diretório das imagens de teste
+#Ao mudar o diretório de teste não esqueça de mudar as variáveis test_dir e ImagensParaAvaliar.
+test_imgs = ['C:\\Users\\Brennus\\Desktop\\leds\\{}'.format(i) for i in os.listdir(test_dir)]
 
 TirarFoto=False
 ImagensParaAvaliar = 20
-
 
 if (TirarFoto==False):
     #Now lets predict on the first ImagensParaAvaliar of the test set
@@ -231,14 +238,24 @@ if (TirarFoto==False):
     i = 0
     text_labels = []
     plt.figure(figsize=(20,20))
-    
+
     for batch in test_datagen.flow(x, batch_size=1):
         pred = model.predict(batch)
-        if pred > 0.5:
-            text_labels.append(f'Capacitor {pred}')
-        else:
-            text_labels.append(f'Resistor {pred}')
-        #Número de linhas, número de colunas
+        print(pred)
+        print(np.argmax(pred))
+        n = np.argmax(pred)
+        if n == 0:
+            text_labels.append(f'Capacitor')
+        elif n == 1:
+            text_labels.append(f'Resistor')
+        elif n == 2:
+            text_labels.append(f'Transistor')
+        elif n == 3:
+            text_labels.append(f'Led')
+        elif n == 4:
+            text_labels.append(f'Indutor')
+
+        # Número de linhas, número de colunas
         plt.subplot((ImagensParaAvaliar / columns) + 1, columns, i + 1)
         plt.title('' + text_labels[i])
         imgplot = plt.imshow(batch[0])
@@ -246,7 +263,8 @@ if (TirarFoto==False):
         if i % ImagensParaAvaliar == 0:
             break
     plt.show()
-else:   
+else:
+    #Não realizei teste nessa parte do código, então ele parmanece inalterado
     camera_port = 0
     file = 'C:\\Home\\usuario\\python\\Youtube CNN GatoCachorro Gera Modelo\\input\\test\\aaImagem.bmp'
     while(True):
