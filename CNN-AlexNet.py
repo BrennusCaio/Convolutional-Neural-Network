@@ -107,24 +107,30 @@ ntreino = len(X_treino)
 nvalidacao = len(X_validacao)
 
 
-#Criar modelo
+#MODELO
 model = models.Sequential()
 
-model.add(layers.Conv2D(32, (3, 3), activation='relu',input_shape=(224, 224, 3)))
-model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(96, (11, 11),strides = 4, activation='relu', input_shape=(nrows , ncolumns, 3)))
+model.add(layers.MaxPooling2D((3, 3),(2,2)))
 
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(256, (5, 5), activation='relu', padding='same'))
+model.add(layers.MaxPooling2D((3, 3),(2,2)))
 
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(384, (3, 3), activation='relu', padding='same'))
 
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(384, (3, 3), activation='relu', padding='same'))
+
+model.add(layers.Conv2D(256, (3, 3), activation='relu', padding='same'))
+model.add(layers.MaxPooling2D((3, 3),(2,2)))
 
 model.add(layers.Flatten())
-model.add(layers.Dropout(0.5))  #Dropout for regularization
-model.add(layers.Dense(512, activation='relu'))
+
+model.add(layers.Dense(4096, activation='relu'))
+model.add(layers.Dropout(0.5))
+
+model.add(layers.Dense(4096, activation='relu'))
+model.add(layers.Dropout(0.5))
+
 model.add(layers.Dense(4, activation='softmax'))
 
 sumario_do_modelo = model.summary()
